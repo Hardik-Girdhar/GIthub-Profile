@@ -1,164 +1,66 @@
-// const APIURL = "https://api.github.com/users/";
-// const main = document.querySelector("#main");
-// const searchBox = document.querySelector("#search")
-// const getUser = async(username) => {
-//     const response = await fetch(APIURL + username);
-//     const data = await response.json()
-//     const card = `
-//         <div class="card">
-//             <div>
-//                 <img class="avatar" src="${data.avatar_url}" alt="Florin Pop">
-//             </div>
-//             <div class="user-info">
-//                 <h2>${data.name}</h2>
-//                 <p>${data.bio}</p>
-
-//                 <ul class="info">
-//                     <li>${data.followers}<strong>Followers</strong></li>
-//                     <li>${data.following}<strong>Following</strong></li>
-//                     <li>${data.public_repos}<strong>Repos</strong></li>
-//                 </ul>
-
-//                 <div id="repos">
-                  
-//                 </div>
-//             </div>
-//         </div>
-//     `
-//     main.innerHTML = card;
-//     getRepos(username)
-// }
-
-
-// // init call
-// getUser("Hardik-Girdhar")
-
-
-// const getRepos = async(username) => {
-//     const repos = document.querySelector("#repos")
-//     const response = await fetch(APIURL + username + "/repos")
-//     const data = await response.json();
-//     data.forEach(
-//         (item) => {
-
-//             const elem = document.createElement("a")
-//             elem.classList.add("repo")
-//             elem.href = item.html_url
-//             elem.innerText = item.name
-//             elem.target = "_blank"
-//             repos.appendChild(elem)
-//         }
-//     )
-// }
-
-// const formSubmit = () => {
-//     if (searchBox.value != "") {
-//         getUser(searchBox.value);
-//         searchBox.value = ""
-//     }
-//     return false;
-// }
-
-
-// searchBox.addEventListener(
-//         "focusout",
-//         function() {
-//             formSubmit()
-//         }
-//     )
-//     /**
-//      *   <a class="repo" href="#" target="_blank">Repo 1</a>
-//                         <a class="repo" href="#" target="_blank">Repo 2</a>
-//                         <a class="repo" href="#" target="_blank">Repo 3</a>
-//      */
-
 const APIURL = "https://api.github.com/users/";
 const main = document.querySelector("#main");
 const searchBox = document.querySelector("#search");
-const reposPerPage = 3; // Number of repos to display per page
-let currentPage = 1; // Current page for pagination
 
 const getUser = async (username) => {
-    const response = await fetch(APIURL + username);
-    const data = await response.json();
-    const card = `
-        <div class="card">
-            <div>
-                <img class="avatar" src="${data.avatar_url}" alt="Florin Pop">
-            </div>
-            <div class="user-info">
-                <h2>${data.name}</h2>
-                <p>${data.bio}</p>
-
-                <ul class="info">
-                    <li>${data.followers}<strong>Followers</strong></li>
-                    <li>${data.following}<strong>Following</strong></li>
-                    <li>${data.public_repos}<strong>Repos</strong></li>
-                </ul>
-
-                <div id="repos"></div>
-                <div id="pagination">
-                    <button id="prev" onclick="prevPage()">Previous</button>
-                    <button id="next" onclick="nextPage()">Next</button>
+    try {
+        const response = await fetch(APIURL + username);
+        if (!response.ok) {
+            throw new Error('User not found');
+        }
+        const data = await response.json();
+        const card = `
+            <div class="card">
+                <div>
+                    <img class="avatar" src="${data.avatar_url}" alt="${data.name}">
+                </div>
+                <div class="user-info">
+                    <h2>${data.name}</h2>
+                    <p>${data.bio}</p>
+                    <ul class="info">
+                        <li>${data.followers}<strong>Followers</strong></li>
+                        <li>${data.following}<strong>Following</strong></li>
+                        <li>${data.public_repos}<strong>Repos</strong></li>
+                    </ul>
+                    <div id="repos"></div>
                 </div>
             </div>
-        </div>
-    `;
-    main.innerHTML = card;
-    getRepos(username, currentPage);
-}
+        `;
+        main.innerHTML = card;
+        getRepos(username);
+    } catch (error) {
+        main.innerHTML = `<p class="error">${error.message}</p>`;
+    }
+};
 
-const getRepos = async (username, page) => {
-    const repos = document.querySelector("#repos");
-    repos.innerHTML = ""; // Clear previous repos
-
-    const response = await fetch(`${APIURL}${username}/repos?page=${page}&per_page=${reposPerPage}`);
-    const data = await response.json();
-
-    data.forEach((item) => {
-        const elem = document.createElement("a");
-        elem.classList.add("repo");
-        elem.href = item.html_url;
-        elem.innerText = item.name;
-        elem.target = "_blank";
-        repos.appendChild(elem);
-    });
-
-    // Update button states
-    updatePaginationButtons(page, data.length);
-}
-
-const updatePaginationButtons = (page, reposCount) => {
-    document.getElementById("prev").disabled = page === 1;
-    document.getElementById("next").disabled = reposCount < reposPerPage;
-}
+const getRepos = async (username) => {
+    try {
+        const repos = document.querySelector("#repos");
+        const response = await fetch(APIURL + username + "/repos");
+        if (!response.ok) {
+            throw new Error('Unable to fetch repositories');
+        }
+        const data = await response.json();
+        repos.innerHTML = "";  // Clear previous repositories
+        data.slice(0, 3).forEach((item) => {
+            const elem = document.createElement("a");
+            elem.classList.add("repo");
+            elem.href = item.html_url;
+            elem.innerText = item.name;
+            elem.target = "_blank";
+            repos.appendChild(elem);
+        });
+    } catch (error) {
+        repos.innerHTML = `<p class="error">${error.message}</p>`;
+    }
+};
 
 const formSubmit = () => {
-    if (searchBox.value != "") {
-        currentPage = 1; // Reset to first page
+    if (searchBox.value !== "") {
         getUser(searchBox.value);
         searchBox.value = "";
     }
     return false;
-}
+};
 
-const nextPage = () => {
-    currentPage++;
-    const username = document.querySelector(".user-info h2").innerText;
-    getRepos(username, currentPage);
-}
-
-const prevPage = () => {
-    if (currentPage > 1) {
-        currentPage--;
-        const username = document.querySelector(".user-info h2").innerText;
-        getRepos(username, currentPage);
-    }
-}
-
-searchBox.addEventListener("focusout", function() {
-    formSubmit();
-});
-
-// init call
-getUser("Hardik-Girdhar");
+searchBox.addEventListener("focusout", formSubmit);
