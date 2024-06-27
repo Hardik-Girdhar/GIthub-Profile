@@ -5,7 +5,9 @@ The GitHub Profile Search web application allows users to search for GitHub prof
 
 ## Features
 **User Search**: Enter a GitHub username to fetch and display the user's profile information.
+
 **User Profile**: Displays the user's avatar, name, bio, number of followers, following, and public repositories.
+
 **Repository List**: Lists the user's repositories with pagination, showing three repositories simultaneously.
 **Navigation Bar**: Includes links to Home, About, and Sign In pages for easy navigation.
 **Responsive Design**: Ensures the application is user-friendly across various devices.
