@@ -202,3 +202,12 @@ input:focus {
 .signin-section button:hover {
     background-color: #575757;
 }
+
+/* ERROR ---------- */
+
+.error {
+    color: red;
+    font-size: 1.2rem;
+    text-align: center;
+    margin-top: 1rem;
+}
